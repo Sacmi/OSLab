@@ -86,6 +86,8 @@ int main()
 В случае удачи в переменную thid занесется идентификатор нового thread'а. Если возникнет ошибка - прекратим работу.
 */
 
+
+
     result = pthread_create(&thid, (pthread_attr_t *)NULL, mythread, NULL);
 
     if (result != 0)
@@ -95,6 +97,16 @@ int main()
     }
 
     printf("Thread created, thid = %d\n", thid);
+
+    if (result != 0)
+    {
+        printf("Error on thread create, return value = %d\n", result);
+        exit(-1);
+    }
+
+    printf("Thread created, thid = %d\n", thid);
+
+    result = pthread_create(&thid, (pthread_attr_t *)NULL, mythread, NULL);
 
     /*
 Запрашиваем идентификатор главного thread'а
@@ -114,8 +126,6 @@ int main()
 */
 
     pthread_join(thid, (void **)NULL);
-
-    personal_thread();
 
     return 0;
 }
