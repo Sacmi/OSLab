@@ -1,5 +1,3 @@
-
-
 /* Программа 1 для иллюстрации некорректности работы с разделяемой памятью*/
 
 /* Мы организуем разделяемую память для массива из 3-х целых чисел. Первый элемент массива является счетчиком числа запусков программы 1, т. е. данной программы, второй элемент массива - счетчиком числа запусков программы 2, третий элемент массива - счетчиком числа запусков обеих программ */
@@ -9,6 +7,7 @@
 #include <sys/shm.h>
 #include <stdio.h>
 #include <errno.h>
+#include <stdlib.h>
 
 int main()
 {
@@ -18,17 +17,17 @@ int main()
 
     int new = 1; /* Флаг необходимости инициализации элементов массива */
 
-    char pathname[] = "4a.c"; /* Имя файла, использующееся для генерации ключа. Файл с таким именем должен существовать в текущей директории */
+    char pathname[] = "task1_1"; /* Имя файла, использующееся для генерации ключа. Файл с таким именем должен существовать в текущей директории */
 
     key_t key[2]; /* IPC ключ */
 
-    long i;
+    int i = 1;
 
     int completed = 0;
 
     /* Генерируем IPC ключ из имени файла 06-1a.c в текущей директории и номера экземпляра области разделяемой памяти 0 */
 
-    if ((key[0] = ftok(pathname, 0)) < 0 || (key[1] = ftok("5a.c", 0)) < 0)
+    if ((key[0] = ftok(pathname, 0)) < 0 || (key[1] = ftok("task1_2", 0)) < 0)
     {
         printf("Can\'t generate key\n");
         exit(-1);
@@ -121,25 +120,21 @@ int main()
         ready[1] = 1;
         ready[2] = 0;
 
-        while (!completed)
-        {
+        ready[i] = 1;
+        ready[2] = 1 - i;
 
-            while (ready[0] && ready[2] == 0)
-            {
-                array[1] = array[1] + 1;
+        while(ready[1-i] && ready[2] == 1 - i);
 
-                for (i = 0; i < 1000000000L; i++)
-                    ;
+        for (long j = 0; j < 1000000000L; j++)
+            ;
 
-                array[2] = array[2] + 1;
-                completed = 1;
+        array[i]++;
+        array[2]++;
 
-                break;
-            }
+        ready[i] = 0;
 
-            printf("Program 1 was spawn %d times, program 2 - %d times, total - %d times\n",
-                   array[0], array[1], array[2]);
-        }
+        printf("Program 1 was spawn %d times, program 2 - %d times, total - %d times\n",
+               array[0], array[1], array[2]);
         ready[1] = 0;
     }
 
